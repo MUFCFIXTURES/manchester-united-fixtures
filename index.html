@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#DA291C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="United Fixtures">
+<meta name="apple-mobile-web-app-title" content=" Manchester United Fixtures 26/27 Season">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="united-fixtures-icon.png">
 <link rel="apple-touch-icon" href="united-fixtures-icon.png">
@@ -59,6 +59,7 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .fixture-meta{margin-top:5px;color:#666;font-size:11px}
 .home{color:#27802c;font-weight:800}
 .away{color:#a14d00;font-weight:800}
+.homeaway-tbc{color:#9a7100;font-weight:800}
 .fixture-time{min-width:43px;text-align:right;font-size:16px;font-weight:900}
 .fixture-time.tbc{color:#9a7100;font-size:13px}
 .status{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:5px;font-size:9px;font-weight:800;background:#fff2cc;color:#856404}
@@ -68,6 +69,7 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .loading,.error,.empty{background:white;border-radius:14px;padding:20px;text-align:center}
 .error{color:#a00000}
 .footer{text-align:center;padding:28px 10px;color:#888;font-size:10px}
+
 @media(max-width:500px){
 header h1{font-size:19px}
 .header-icon{width:36px;height:36px}
@@ -83,211 +85,1029 @@ header h1{font-size:19px}
 </head>
 
 <body>
+
 <header>
   <div class="header-row">
+
     <div class="header-title">
-      <img class="header-icon" src="united-fixtures-icon.png" alt="">
+
+      <img
+        class="header-icon"
+        src="united-fixtures-icon.png"
+        alt=""
+      >
+
       <div>
         <h1>UNITED FIXTURES</h1>
         <p>2026/27 SEASON</p>
       </div>
+
     </div>
-    <button class="refresh-btn" id="refreshButton" type="button" title="Refresh fixtures">
-      <span class="refresh-icon">↻</span><span class="refresh-text">REFRESH</span>
+
+    <button
+      class="refresh-btn"
+      id="refreshButton"
+      type="button"
+      title="Refresh fixtures"
+    >
+      <span class="refresh-icon">↻</span>
+      <span class="refresh-text">REFRESH</span>
     </button>
+
   </div>
-  <div class="refresh-status" id="refreshStatus"></div>
+
+  <div
+    class="refresh-status"
+    id="refreshStatus"
+  ></div>
+
 </header>
 
 <main class="container">
-<section class="next-match" id="nextMatch">
-  <div class="next-label">Next Match</div>
-  <div class="loading">Loading fixtures...</div>
+
+<section
+  class="next-match"
+  id="nextMatch"
+>
+
+  <div class="next-label">
+    Next Match
+  </div>
+
+  <div class="loading">
+    Loading fixtures...
+  </div>
+
 </section>
 
-<div class="filters" id="filters">
-  <button class="active" data-filter="All">ALL</button>
-  <button data-filter="Premier League">PREMIER LEAGUE</button>
-  <button data-filter="Champions League">CHAMPIONS LEAGUE</button>
-  <button data-filter="FA Cup">FA CUP</button>
-  <button data-filter="Carabao Cup">CARABAO CUP</button>
+
+<div
+  class="filters"
+  id="filters"
+>
+
+  <button
+    class="active"
+    data-filter="All"
+  >
+    ALL
+  </button>
+
+  <button
+    data-filter="Premier League"
+  >
+    PREMIER LEAGUE
+  </button>
+
+  <button
+    data-filter="Champions League"
+  >
+    CHAMPIONS LEAGUE
+  </button>
+
+  <button
+    data-filter="FA Cup"
+  >
+    FA CUP
+  </button>
+
+  <button
+    data-filter="Carabao Cup"
+  >
+    CARABAO CUP
+  </button>
+
 </div>
 
-<div class="month-nav" id="monthNav"></div>
-<section id="fixtures"><div class="loading">Loading fixtures...</div></section>
-<div class="footer">Manchester United 2026/27</div>
+
+<div
+  class="month-nav"
+  id="monthNav"
+></div>
+
+
+<section id="fixtures">
+
+  <div class="loading">
+    Loading fixtures...
+  </div>
+
+</section>
+
+
+<div class="footer">
+  Manchester United 2026/27
+</div>
+
 </main>
 
+
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbxak67aZihpH2B0a3Ls46HZubqv7P0h5VM7QF5fTmD9EGGEvqw3IES2B7PBt6-uuvEH/exec";
-let fixtures=[],currentFilter="All",selectedMonth="All",countdownTimer;
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbxak67aZihpH2B0a3Ls46HZubqv7P0h5VM7QF5fTmD9EGGEvqw3IES2B7PBt6-uuvEH/exec";
+
+
+let fixtures = [];
+let currentFilter = "All";
+let selectedMonth = "All";
+let countdownTimer;
+
 
 async function loadFixtures(showMessage=false){
-  const button=document.getElementById("refreshButton");
-  const status=document.getElementById("refreshStatus");
-  button.disabled=true;
-  if(showMessage) status.textContent="Refreshing…";
-  try{
-    const separator=API_URL.includes("?")?"&":"?";
-    const response=await fetch(API_URL+separator+"t="+Date.now(),{
-      method:"GET",redirect:"follow",mode:"cors",cache:"no-store"
-    });
-    if(!response.ok) throw new Error("Unable to load data");
-    fixtures=await response.json();
-    fixtures=fixtures.filter(f=>f.Date).sort((a,b)=>new Date(a.Date)-new Date(b.Date));
-    buildMonthNavigation();
-    showNextMatch();
-    showFixtures();
-    if(showMessage) status.textContent="Fixtures updated";
-    setTimeout(()=>{status.textContent=""},2500);
-  }catch(error){
-    console.error(error);
-    document.getElementById("fixtures").innerHTML='<div class="error"><strong>Unable to load fixtures</strong><br><br>Please try again.</div>';
-    status.textContent="Update failed";
-  }finally{
-    button.disabled=false;
+
+  const button =
+    document.getElementById("refreshButton");
+
+  const status =
+    document.getElementById("refreshStatus");
+
+  button.disabled = true;
+
+  if(showMessage){
+
+    status.textContent =
+      "Refreshing…";
+
   }
+
+  try{
+
+    const separator =
+      API_URL.includes("?")
+      ? "&"
+      : "?";
+
+    const response =
+      await fetch(
+        API_URL +
+        separator +
+        "t=" +
+        Date.now(),
+        {
+          method:"GET",
+          redirect:"follow",
+          mode:"cors",
+          cache:"no-store"
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "Unable to load data"
+      );
+
+    }
+
+
+    fixtures =
+      await response.json();
+
+
+    fixtures =
+      fixtures
+        .filter(f => f.Date)
+        .sort(
+          (a,b) =>
+            new Date(a.Date) -
+            new Date(b.Date)
+        );
+
+
+    buildMonthNavigation();
+
+    showNextMatch();
+
+    showFixtures();
+
+
+    if(showMessage){
+
+      status.textContent =
+        "Fixtures updated";
+
+    }
+
+
+    setTimeout(
+      () => {
+        status.textContent = "";
+      },
+      2500
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById(
+      "fixtures"
+    ).innerHTML =
+      '<div class="error">' +
+      '<strong>Unable to load fixtures</strong>' +
+      '<br><br>Please try again.' +
+      '</div>';
+
+
+    status.textContent =
+      "Update failed";
+
+
+  }finally{
+
+    button.disabled = false;
+
+  }
+
 }
+
 
 function isConfirmed(fixture){
-  return String(fixture.Status||"").trim().toLowerCase()==="confirmed";
+
+  return String(
+    fixture.Status || ""
+  )
+  .trim()
+  .toLowerCase() === "confirmed";
+
 }
+
 
 function getKickoff(fixture){
-  return isConfirmed(fixture)&&fixture.Kickoff?fixture.Kickoff:"TBC";
+
+  return (
+    isConfirmed(fixture) &&
+    fixture.Kickoff
+  )
+  ? fixture.Kickoff
+  : "TBC";
+
 }
+
 
 function isBigMatch(fixture){
-  return ["Liverpool","Manchester City","Arsenal","Chelsea","Tottenham Hotspur","Newcastle United"].includes(fixture.Opponent);
+
+  return [
+    "Liverpool",
+    "Manchester City",
+    "Arsenal",
+    "Chelsea",
+    "Tottenham Hotspur",
+    "Newcastle United"
+  ].includes(
+    fixture.Opponent
+  );
+
 }
+
 
 function showNextMatch(){
-  const today=new Date();
-  const next=fixtures.find(f=>new Date(f.Date)>=today);
-  const container=document.getElementById("nextMatch");
+
+  const today =
+    new Date();
+
+  const next =
+    fixtures.find(
+      f =>
+        new Date(f.Date) >= today
+    );
+
+
+  const container =
+    document.getElementById(
+      "nextMatch"
+    );
+
+
   if(!next){
-    container.innerHTML='<div class="next-label">Season Complete</div><div class="empty">No upcoming fixtures.</div>';
+
+    container.innerHTML =
+      '<div class="next-label">' +
+      'Season Complete' +
+      '</div>' +
+      '<div class="empty">' +
+      'No upcoming fixtures.' +
+      '</div>';
+
     return;
+
   }
-  const opponent=next.HomeAway==="Home"?"Manchester United vs "+next.Opponent:next.Opponent+" vs Manchester United";
-  const confirmed=isConfirmed(next),kickoff=getKickoff(next);
-  container.innerHTML=`
-    <div class="next-label">Next Match</div>
-    <div class="next-opponent">${opponent}</div>
-    <div class="next-date">${formatDate(next.Date)}</div>
-    <div class="next-time ${confirmed?"":"tbc"}">${kickoff}</div>
-    <div class="next-competition">${next.Competition}</div>
-    <div class="next-location">${next.HomeAway==="Home"?"🏠 HOME":"✈️ AWAY"}</div>
+
+
+  /*
+   * HOME / AWAY / TBC
+   */
+
+  const homeAway =
+    String(
+      next.HomeAway || "TBC"
+    ).trim();
+
+
+  let opponent;
+
+
+  if(homeAway === "Home"){
+
+    opponent =
+      "Manchester United vs " +
+      next.Opponent;
+
+  }else if(homeAway === "Away"){
+
+    opponent =
+      next.Opponent +
+      " vs Manchester United";
+
+  }else{
+
+    opponent =
+      next.Opponent;
+
+  }
+
+
+  let locationLabel;
+
+
+  if(homeAway === "Home"){
+
+    locationLabel =
+      "🏠 HOME";
+
+  }else if(homeAway === "Away"){
+
+    locationLabel =
+      "✈️ AWAY";
+
+  }else{
+
+    locationLabel =
+      "TBC";
+
+  }
+
+
+  const confirmed =
+    isConfirmed(next);
+
+  const kickoff =
+    getKickoff(next);
+
+
+  container.innerHTML = `
+
+    <div class="next-label">
+      Next Match
+    </div>
+
+    <div class="next-opponent">
+      ${opponent}
+    </div>
+
+    <div class="next-date">
+      ${formatDate(next.Date)}
+    </div>
+
+    <div class="next-time ${confirmed ? "" : "tbc"}">
+      ${kickoff}
+    </div>
+
+    <div class="next-competition">
+      ${next.Competition}
+    </div>
+
+    <div class="next-location">
+      ${locationLabel}
+    </div>
+
     <div class="countdown">
-      <div class="countdown-label">Countdown</div>
-      <div class="countdown-value" id="countdown">Calculating...</div>
-    </div>`;
+
+      <div class="countdown-label">
+        Countdown
+      </div>
+
+      <div
+        class="countdown-value"
+        id="countdown"
+      >
+        Calculating...
+      </div>
+
+    </div>
+
+  `;
+
+
   startCountdown(next);
+
 }
+
 
 function startCountdown(fixture){
-  clearInterval(countdownTimer);
-  const countdown=document.getElementById("countdown");
-  if(!countdown)return;
-  function update(){
-    const target=new Date(fixture.Date);
-    if(isConfirmed(fixture)&&fixture.Kickoff){
-      const parts=String(fixture.Kickoff).split(":");
-      target.setHours(Number(parts[0]),Number(parts[1]),0,0);
-    }
-    const difference=target-new Date();
-    if(difference<=0){countdown.textContent="Matchday";return;}
-    const days=Math.floor(difference/(1000*60*60*24));
-    const hours=Math.floor((difference/(1000*60*60))%24);
-    const minutes=Math.floor((difference/(1000*60))%60);
-    countdown.textContent=`${days}d ${hours}h ${minutes}m`;
+
+  clearInterval(
+    countdownTimer
+  );
+
+
+  const countdown =
+    document.getElementById(
+      "countdown"
+    );
+
+
+  if(!countdown){
+
+    return;
+
   }
+
+
+  function update(){
+
+    const target =
+      new Date(
+        fixture.Date
+      );
+
+
+    if(
+      isConfirmed(fixture) &&
+      fixture.Kickoff
+    ){
+
+      const parts =
+        String(
+          fixture.Kickoff
+        ).split(":");
+
+
+      target.setHours(
+        Number(parts[0]),
+        Number(parts[1]),
+        0,
+        0
+      );
+
+    }
+
+
+    const difference =
+      target - new Date();
+
+
+    if(difference <= 0){
+
+      countdown.textContent =
+        "Matchday";
+
+      return;
+
+    }
+
+
+    const days =
+      Math.floor(
+        difference /
+        (1000 * 60 * 60 * 24)
+      );
+
+
+    const hours =
+      Math.floor(
+        (
+          difference /
+          (1000 * 60 * 60)
+        ) % 24
+      );
+
+
+    const minutes =
+      Math.floor(
+        (
+          difference /
+          (1000 * 60)
+        ) % 60
+      );
+
+
+    countdown.textContent =
+      `${days}d ${hours}h ${minutes}m`;
+
+  }
+
+
   update();
-  countdownTimer=setInterval(update,60000);
+
+  countdownTimer =
+    setInterval(
+      update,
+      60000
+    );
+
 }
+
 
 function buildMonthNavigation(){
-  const nav=document.getElementById("monthNav");
-  const months=[];
-  fixtures.forEach(f=>{
-    const d=new Date(f.Date);
-    const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-    if(!months.includes(key))months.push(key);
-  });
-  nav.innerHTML=`<button class="active" data-month="All">ALL MONTHS</button>`+
-    months.map(key=>{
-      const d=new Date(key+"-01");
-      return `<button data-month="${key}">${d.toLocaleDateString("en-GB",{month:"short"}).toUpperCase()}</button>`;
-    }).join("");
-  nav.querySelectorAll("button").forEach(button=>{
-    button.addEventListener("click",()=>{
-      nav.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-      button.classList.add("active");
-      selectedMonth=button.dataset.month;
-      showFixtures();
-    });
-  });
+
+  const nav =
+    document.getElementById(
+      "monthNav"
+    );
+
+
+  const months = [];
+
+
+  fixtures.forEach(
+    f => {
+
+      const d =
+        new Date(f.Date);
+
+
+      const key =
+        d.getFullYear() +
+        "-" +
+        String(
+          d.getMonth() + 1
+        ).padStart(2,"0");
+
+
+      if(
+        !months.includes(key)
+      ){
+
+        months.push(key);
+
+      }
+
+    }
+  );
+
+
+  nav.innerHTML =
+    `<button
+      class="active"
+      data-month="All"
+    >
+      ALL MONTHS
+    </button>` +
+
+    months.map(
+      key => {
+
+        const d =
+          new Date(
+            key + "-01"
+          );
+
+
+        return `
+          <button
+            data-month="${key}"
+          >
+            ${
+              d.toLocaleDateString(
+                "en-GB",
+                {
+                  month:"short"
+                }
+              ).toUpperCase()
+            }
+          </button>
+        `;
+
+      }
+    ).join("");
+
+
+  nav
+    .querySelectorAll("button")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            nav
+              .querySelectorAll(
+                "button"
+              )
+              .forEach(
+                b =>
+                  b.classList.remove(
+                    "active"
+                  )
+              );
+
+
+            button.classList.add(
+              "active"
+            );
+
+
+            selectedMonth =
+              button.dataset.month;
+
+
+            showFixtures();
+
+          }
+        );
+
+      }
+    );
+
 }
+
 
 function showFixtures(){
-  const container=document.getElementById("fixtures");
-  let filtered=currentFilter==="All"?fixtures:fixtures.filter(f=>f.Competition===currentFilter);
-  if(selectedMonth!=="All"){
-    filtered=filtered.filter(f=>{
-      const d=new Date(f.Date);
-      return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")===selectedMonth;
-    });
+
+  const container =
+    document.getElementById(
+      "fixtures"
+    );
+
+
+  let filtered =
+    currentFilter === "All"
+    ? fixtures
+    : fixtures.filter(
+        f =>
+          f.Competition ===
+          currentFilter
+      );
+
+
+  if(
+    selectedMonth !== "All"
+  ){
+
+    filtered =
+      filtered.filter(
+        f => {
+
+          const d =
+            new Date(f.Date);
+
+
+          return (
+            d.getFullYear() +
+            "-" +
+            String(
+              d.getMonth() + 1
+            ).padStart(2,"0")
+          ) === selectedMonth;
+
+        }
+      );
+
   }
-  if(!filtered.length){container.innerHTML='<div class="empty">No fixtures found.</div>';return;}
-  let html="",currentMonth="";
-  filtered.forEach(f=>{
-    const date=new Date(f.Date);
-    const month=date.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
-    if(month!==currentMonth){
-      currentMonth=month;
-      html+=`<div class="month"><div class="month-title">${month}</div><div class="month-line"></div></div>`;
-    }
-    const homeAway=f.HomeAway||"TBC";
-    const opponent=homeAway==="Home"?"Manchester United vs "+f.Opponent:homeAway==="Away"?f.Opponent+" vs Manchester United":f.Opponent;
-    const confirmed=isConfirmed(f),kickoff=getKickoff(f),bigMatch=isBigMatch(f);
-    const tv=f.TV&&f.TV!=="TBC"?`<span class="tv">📺 ${f.TV}</span>`:"";
-    html+=`
-      <div class="fixture ${bigMatch?"big-match":""}">
-        ${bigMatch?'<div class="star">⭐</div>':""}
-        <div class="fixture-date"><strong>${date.getDate()}</strong><span>${date.toLocaleDateString("en-GB",{weekday:"short"})}</span></div>
-        <div class="fixture-info">
-          <div class="fixture-opponent">${opponent}</div>
-          <div class="fixture-meta">
-            <span class="${homeAway==="Home"?"home":"away"}">${homeAway==="Home"?"🏠 HOME":"✈️ AWAY"}</span>
-            · <span class="competition">${f.Competition}</span>${tv}
+
+
+  if(!filtered.length){
+
+    container.innerHTML =
+      '<div class="empty">' +
+      'No fixtures found.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  let html = "";
+  let currentMonth = "";
+
+
+  filtered.forEach(
+    f => {
+
+      const date =
+        new Date(f.Date);
+
+
+      const month =
+        date.toLocaleDateString(
+          "en-GB",
+          {
+            month:"long",
+            year:"numeric"
+          }
+        );
+
+
+      if(month !== currentMonth){
+
+        currentMonth =
+          month;
+
+
+        html += `
+
+          <div class="month">
+
+            <div class="month-title">
+              ${month}
+            </div>
+
+            <div class="month-line"></div>
+
           </div>
-          <div class="status ${confirmed?"confirmed":""}">${confirmed?"✓ Confirmed":(f.Status||"TBC")}</div>
+
+        `;
+
+      }
+
+
+      /*
+       * HOME / AWAY / TBC
+       */
+
+      const homeAway =
+        String(
+          f.HomeAway || "TBC"
+        ).trim();
+
+
+      let opponent;
+
+
+      if(homeAway === "Home"){
+
+        opponent =
+          "Manchester United vs " +
+          f.Opponent;
+
+      }else if(homeAway === "Away"){
+
+        opponent =
+          f.Opponent +
+          " vs Manchester United";
+
+      }else{
+
+        opponent =
+          f.Opponent;
+
+      }
+
+
+      let homeAwayLabel;
+      let homeAwayClass;
+
+
+      if(homeAway === "Home"){
+
+        homeAwayLabel =
+          "🏠 HOME";
+
+        homeAwayClass =
+          "home";
+
+      }else if(homeAway === "Away"){
+
+        homeAwayLabel =
+          "✈️ AWAY";
+
+        homeAwayClass =
+          "away";
+
+      }else{
+
+        homeAwayLabel =
+          "TBC";
+
+        homeAwayClass =
+          "homeaway-tbc";
+
+      }
+
+
+      const confirmed =
+        isConfirmed(f);
+
+
+      const kickoff =
+        getKickoff(f);
+
+
+      const bigMatch =
+        isBigMatch(f);
+
+
+      const tv =
+        f.TV &&
+        f.TV !== "TBC"
+        ? `<span class="tv">
+             📺 ${f.TV}
+           </span>`
+        : "";
+
+
+      html += `
+
+        <div class="fixture ${bigMatch ? "big-match" : ""}">
+
+          ${
+            bigMatch
+            ? '<div class="star">⭐</div>'
+            : ""
+          }
+
+
+          <div class="fixture-date">
+
+            <strong>
+              ${date.getDate()}
+            </strong>
+
+            <span>
+              ${
+                date.toLocaleDateString(
+                  "en-GB",
+                  {
+                    weekday:"short"
+                  }
+                )
+              }
+            </span>
+
+          </div>
+
+
+          <div class="fixture-info">
+
+            <div class="fixture-opponent">
+              ${opponent}
+            </div>
+
+
+            <div class="fixture-meta">
+
+              <span
+                class="${homeAwayClass}"
+              >
+                ${homeAwayLabel}
+              </span>
+
+              ·
+
+              <span class="competition">
+                ${f.Competition}
+              </span>
+
+              ${tv}
+
+            </div>
+
+
+            <div
+              class="status ${
+                confirmed
+                ? "confirmed"
+                : ""
+              }"
+            >
+              ${
+                confirmed
+                ? "✓ Confirmed"
+                : (
+                    f.Status ||
+                    "TBC"
+                  )
+              }
+            </div>
+
+          </div>
+
+
+          <div
+            class="fixture-time ${
+              confirmed
+              ? ""
+              : "tbc"
+            }"
+          >
+            ${kickoff}
+          </div>
+
         </div>
-        <div class="fixture-time ${confirmed?"":"tbc"}">${kickoff}</div>
-      </div>`;
-  });
-  container.innerHTML=html;
+
+      `;
+
+    }
+  );
+
+
+  container.innerHTML =
+    html;
+
 }
 
-function formatDate(dateString){
-  return new Date(dateString).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+
+function formatDate(
+  dateString
+){
+
+  return new Date(
+    dateString
+  ).toLocaleDateString(
+    "en-GB",
+    {
+      weekday:"long",
+      day:"numeric",
+      month:"long"
+    }
+  );
+
 }
 
-document.getElementById("filters").addEventListener("click",e=>{
-  if(e.target.tagName!=="BUTTON")return;
-  document.querySelectorAll(".filters button").forEach(b=>b.classList.remove("active"));
-  e.target.classList.add("active");
-  currentFilter=e.target.dataset.filter;
-  showFixtures();
-});
 
-document.getElementById("refreshButton").addEventListener("click",()=>loadFixtures(true));
+document
+  .getElementById("filters")
+  .addEventListener(
+    "click",
+    e => {
 
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+      if(
+        e.target.tagName !==
+        "BUTTON"
+      ){
+
+        return;
+
+      }
+
+
+      document
+        .querySelectorAll(
+          ".filters button"
+        )
+        .forEach(
+          b =>
+            b.classList.remove(
+              "active"
+            )
+        );
+
+
+      e.target.classList.add(
+        "active"
+      );
+
+
+      currentFilter =
+        e.target.dataset.filter;
+
+
+      showFixtures();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "refreshButton"
+  )
+  .addEventListener(
+    "click",
+    () =>
+      loadFixtures(true)
+  );
+
+
+if(
+  "serviceWorker" in navigator
+){
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          console.error
+        );
+
+    }
+  );
+
 }
+
 
 loadFixtures();
+
 </script>
+
 </body>
 </html>
