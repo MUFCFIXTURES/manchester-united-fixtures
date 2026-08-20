@@ -25,6 +25,7 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .refresh-btn:disabled{opacity:.65}
 .refresh-icon{font-size:17px;vertical-align:-2px;margin-right:3px}
 .refresh-status{font-size:10px;margin-top:7px;min-height:12px;opacity:.9}
+.refresh-note{font-size:10px;margin-top:4px;opacity:.82}
 .container{max-width:720px;margin:auto;padding:14px}
 .next-match{background:white;border-radius:20px;padding:22px 18px;margin-top:-8px;margin-bottom:18px;box-shadow:0 5px 20px rgba(0,0,0,.10);text-align:center}
 .next-label{color:#DA291C;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px}
@@ -49,6 +50,8 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .month-title{font-size:19px;font-weight:900}
 .month-line{height:1px;background:#ddd;flex:1}
 .fixture{position:relative;background:white;border-radius:15px;padding:14px;margin-bottom:9px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 8px rgba(0,0,0,.055)}
+.fixture.big-match{border-left:4px solid #DA291C}
+.star{position:absolute;top:7px;right:8px;font-size:12px}
 .fixture-date{width:48px;text-align:center;flex-shrink:0}
 .fixture-date strong{display:block;font-size:21px;line-height:1}
 .fixture-date span{display:block;margin-top:4px;color:#777;font-size:10px;font-weight:bold;text-transform:uppercase}
@@ -118,6 +121,10 @@ header h1{font-size:19px}
     class="refresh-status"
     id="refreshStatus"
   ></div>
+
+  <div class="refresh-note">
+    ↻ Tap Refresh to check for the latest fixtures
+  </div>
 
 </header>
 
@@ -897,6 +904,10 @@ function showFixtures(){
         getKickoff(f);
 
 
+      const bigMatch =
+        isBigMatch(f);
+
+
       const tv =
         f.TV &&
         f.TV !== "TBC"
@@ -908,7 +919,14 @@ function showFixtures(){
 
       html += `
 
-        <div class="fixture">
+        <div class="fixture ${bigMatch ? "big-match" : ""}">
+
+          ${
+            bigMatch
+            ? '<div class="star">⭐</div>'
+            : ""
+          }
+
 
           <div class="fixture-date">
 
