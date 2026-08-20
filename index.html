@@ -371,13 +371,32 @@ function isBigMatch(fixture){
 
 function showNextMatch(){
 
-  const today =
-    new Date();
+  const now = new Date();
 
   const next =
     fixtures.find(
-      f =>
-        new Date(f.Date) >= today
+      f => {
+        const matchTime = new Date(f.Date);
+
+        // If the kick-off is confirmed, use the actual kick-off time.
+        // Otherwise keep the fixture as the next match for its date.
+        if (
+          isConfirmed(f) &&
+          f.Kickoff &&
+          String(f.Kickoff).includes(":")
+        ) {
+          const parts = String(f.Kickoff).split(":");
+
+          matchTime.setHours(
+            Number(parts[0]),
+            Number(parts[1]),
+            0,
+            0
+          );
+        }
+
+        return matchTime >= now;
+      }
     );
 
 
@@ -508,6 +527,20 @@ function showNextMatch(){
 
 
   startCountdown(next);
+
+}
+
+
+function startNextMatchWatcher(){
+
+  setInterval(
+    () => {
+      if(fixtures.length){
+        showNextMatch();
+      }
+    },
+    60000
+  );
 
 }
 
@@ -1111,6 +1144,7 @@ if(
 
 
 loadFixtures();
+startNextMatchWatcher();
 
 </script>
 
