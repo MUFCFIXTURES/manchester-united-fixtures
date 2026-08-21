@@ -35,6 +35,7 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .next-time.tbc{color:#9a7100}
 .next-competition{color:#666;font-size:13px}
 .next-location{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:7px;background:#eee;font-size:11px;font-weight:800}
+.matchday-banner{display:inline-block;margin-top:8px;padding:7px 12px;border-radius:8px;background:#DA291C;color:white;font-size:12px;font-weight:900;letter-spacing:.8px}
 .countdown{margin-top:15px;padding-top:14px;border-top:1px solid #eee}
 .countdown-label{font-size:10px;text-transform:uppercase;color:#777;font-weight:bold}
 .countdown-value{margin-top:3px;font-size:17px;font-weight:800}
@@ -42,12 +43,6 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .filters::-webkit-scrollbar{display:none}
 .filters button{border:0;background:white;color:#222;border-radius:20px;padding:10px 14px;font-size:12px;font-weight:800;white-space:nowrap}
 .filters button.active{background:#DA291C;color:white}
-.search-box{display:flex;align-items:center;gap:7px;background:white;border:1px solid #ddd;border-radius:12px;padding:0 11px;margin:2px 0 10px}
-.search-icon{font-size:15px}
-.search-box input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:11px 2px;font-size:13px;font-family:inherit}
-.search-box input::placeholder{color:#888}
-.clear-search{border:0;background:transparent;color:#777;font-size:14px;font-weight:800;cursor:pointer;padding:5px;display:none}
-.clear-search.visible{display:block}
 .month-nav{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:4px 0 12px}
 .month-nav::-webkit-scrollbar{display:none}
 .month-nav button{border:1px solid #ddd;background:white;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:bold;white-space:nowrap}
@@ -186,24 +181,6 @@ header h1{font-size:19px}
     CARABAO CUP
   </button>
 
-</div>
-
-
-<div class="search-box">
-  <span class="search-icon">🔎</span>
-  <input
-    type="search"
-    id="searchInput"
-    placeholder="Search fixtures..."
-    autocomplete="off"
-  >
-  <button
-    type="button"
-    id="clearSearch"
-    class="clear-search"
-    aria-label="Clear search"
-    title="Clear search"
-  >✕</button>
 </div>
 
 
@@ -503,6 +480,32 @@ function showNextMatch(){
   const kickoff =
     getKickoff(next);
 
+  let matchday = false;
+
+  if(
+    confirmed &&
+    next.Kickoff &&
+    String(next.Kickoff).includes(":")
+  ){
+
+    const matchStart =
+      new Date(next.Date);
+
+    const parts =
+      String(next.Kickoff).split(":");
+
+    matchStart.setHours(
+      Number(parts[0]),
+      Number(parts[1]),
+      0,
+      0
+    );
+
+    matchday =
+      new Date() >= matchStart;
+
+  }
+
 
   container.innerHTML = `
 
@@ -530,25 +533,33 @@ function showNextMatch(){
       ${locationLabel}
     </div>
 
-    <div class="countdown">
+    ${
+      matchday
+      ? `<div class="matchday-banner">🔴 MATCHDAY · KICK-OFF NOW</div>`
+      : `<div class="countdown">
 
-      <div class="countdown-label">
-        Countdown
-      </div>
+          <div class="countdown-label">
+            Countdown
+          </div>
 
-      <div
-        class="countdown-value"
-        id="countdown"
-      >
-        Calculating...
-      </div>
+          <div
+            class="countdown-value"
+            id="countdown"
+          >
+            Calculating...
+          </div>
 
-    </div>
+        </div>`
+    }
 
   `;
 
 
-  startCountdown(next);
+  if(!matchday){
+    startCountdown(next);
+  }else{
+    clearInterval(countdownTimer);
+  }
 
 }
 
@@ -803,59 +814,6 @@ function showFixtures(){
           f.Competition ===
           currentFilter
       );
-
-
-  const searchInput =
-    document.getElementById("searchInput");
-
-  const searchTerm =
-    searchInput
-    ? searchInput.value.trim().toLowerCase()
-    : "";
-
-
-  if(searchTerm){
-
-    filtered =
-      filtered.filter(
-        f => {
-
-          const date =
-            new Date(f.Date);
-
-          const dateText =
-            date.toLocaleDateString(
-              "en-GB",
-              {
-                weekday:"long",
-                day:"numeric",
-                month:"long",
-                year:"numeric"
-              }
-            );
-
-          const searchable =
-            [
-              f.Opponent,
-              f.Competition,
-              f.HomeAway,
-              f.Kickoff,
-              f.Status,
-              f.Round,
-              f.TV,
-              f.Notes,
-              dateText
-            ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-          return searchable.includes(searchTerm);
-
-        }
-      );
-
-  }
 
 
   if(
@@ -1185,58 +1143,6 @@ document
     () =>
       loadFixtures(true)
   );
-
-
-const searchInput =
-  document.getElementById(
-    "searchInput"
-  );
-
-const clearSearch =
-  document.getElementById(
-    "clearSearch"
-  );
-
-
-if(searchInput){
-
-  searchInput.addEventListener(
-    "input",
-    () => {
-
-      clearSearch.classList.toggle(
-        "visible",
-        searchInput.value.length > 0
-      );
-
-      showFixtures();
-
-    }
-  );
-
-}
-
-
-if(clearSearch){
-
-  clearSearch.addEventListener(
-    "click",
-    () => {
-
-      searchInput.value = "";
-
-      clearSearch.classList.remove(
-        "visible"
-      );
-
-      showFixtures();
-
-      searchInput.focus();
-
-    }
-  );
-
-}
 
 
 if(
