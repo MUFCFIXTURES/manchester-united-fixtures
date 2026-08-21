@@ -665,9 +665,17 @@ function startCountdown(fixture){
         ) % 60
       );
 
+    const seconds =
+      Math.floor(
+        (
+          difference /
+          1000
+        ) % 60
+      );
+
 
     countdown.textContent =
-      `${days}d ${hours}h ${minutes}m`;
+      `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
   }
 
@@ -677,7 +685,7 @@ function startCountdown(fixture){
   countdownTimer =
     setInterval(
       update,
-      60000
+      1000
     );
 
 }
