@@ -377,24 +377,19 @@ function showNextMatch(){
       f => {
         const matchTime = new Date(f.Date);
 
-        // If the kick-off is confirmed, use the actual kick-off time.
-        // Otherwise keep the fixture as the next match for its date.
         if (
           isConfirmed(f) &&
           f.Kickoff &&
           String(f.Kickoff).includes(":")
         ) {
           const parts = String(f.Kickoff).split(":");
-
-          matchTime.setHours(
-            Number(parts[0]),
-            Number(parts[1]),
-            0,
-            0
-          );
+          matchTime.setHours(Number(parts[0]), Number(parts[1]), 0, 0);
+          return matchTime > now;
         }
 
-        return matchTime >= now;
+        const endOfDay = new Date(f.Date);
+        endOfDay.setHours(23, 59, 59, 999);
+        return endOfDay > now;
       }
     );
 
@@ -632,12 +627,9 @@ function startCountdown(fixture){
 
 
     if(difference <= 0){
-
-      countdown.textContent =
-        "Matchday";
-
+      clearInterval(countdownTimer);
+      showNextMatch();
       return;
-
     }
 
 
