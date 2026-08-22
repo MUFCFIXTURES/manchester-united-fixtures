@@ -966,10 +966,22 @@ function showFixtures(){
       const confirmed =
         isConfirmed(f);
 
+      const dateText =
+        String(f.Date || "")
+          .trim()
+          .toLowerCase();
+
+      const notesText =
+        String(f.Notes || "");
+
       const dateIsTBC =
-        !f.Date ||
-        String(f.Date).trim().toLowerCase() === "tbc" ||
-        String(f.Date).trim().toLowerCase() === "to be confirmed";
+        !confirmed &&
+        (
+          dateText === "tbc" ||
+          dateText === "to be confirmed" ||
+          /date.*(tbc|not set|to be confirmed)/i.test(notesText) ||
+          /(tbc|not set|to be confirmed).*date/i.test(notesText)
+        );
 
 
       const kickoff =
@@ -1032,13 +1044,7 @@ function showFixtures(){
 
               ${tv}
 
-            ${
-              dateIsTBC
-              ? `<div class="date-tbc-note">
-                   The date for this fixture is not set and could change
-                 </div>`
-              : ""
-            }
+            </div>
 
 
             <div
@@ -1057,6 +1063,14 @@ function showFixtures(){
                   )
               }
             </div>
+
+            ${
+              dateIsTBC
+              ? `<div class="date-tbc-note">
+                   The date for this fixture is not set and could change
+                 </div>`
+              : ""
+            }
 
           </div>
 
