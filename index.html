@@ -47,6 +47,21 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .month-nav::-webkit-scrollbar{display:none}
 .month-nav button{border:1px solid #ddd;background:white;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:bold;white-space:nowrap}
 .month-nav button.active{border-color:#DA291C;color:#DA291C}
+.tv-info{background:white;border-radius:14px;margin:2px 0 14px;box-shadow:0 2px 8px rgba(0,0,0,.055);overflow:hidden}
+.tv-info summary{cursor:pointer;padding:13px 14px;font-size:12px;font-weight:800;color:#222;list-style:none}
+.tv-info summary::-webkit-details-marker{display:none}
+.tv-info summary::after{content:"▾";float:right;color:#DA291C;font-size:14px}
+.tv-info[open] summary{border-bottom:1px solid #eee}
+.tv-info[open] summary::after{content:"▴"}
+.tv-info-intro{padding:12px 14px 6px;color:#666;font-size:10px;line-height:1.4}
+.tv-table-wrap{overflow-x:auto;padding:0 10px 12px}
+.tv-table{width:100%;border-collapse:collapse;font-size:10px}
+.tv-table th{color:#666;font-weight:800;text-align:left;padding:8px 5px;border-bottom:1px solid #ddd}
+.tv-table td{padding:8px 5px;border-bottom:1px solid #eee}
+.tv-table th:nth-child(2),.tv-table td:nth-child(2){text-align:center;white-space:nowrap}
+.tv-table th:last-child,.tv-table td:last-child{white-space:nowrap}
+.tv-table tr:last-child td{border-bottom:0}
+.tv-note{padding:0 14px 12px;color:#888;font-size:9px;line-height:1.4}
 .month{display:flex;align-items:center;gap:10px;margin:20px 3px 10px}
 .month-title{font-size:19px;font-weight:900}
 .month-line{height:1px;background:#ddd;flex:1}
@@ -189,6 +204,117 @@ header h1{font-size:19px}
   class="month-nav"
   id="monthNav"
 ></div>
+
+
+<details class="tv-info">
+
+  <summary>
+    📺 TV Announcement Dates
+  </summary>
+
+  <div class="tv-info-intro">
+    Below are the approximate dates for when the announcements
+    on matches selected for live TV broadcast will be made.
+  </div>
+
+  <div class="tv-table-wrap">
+
+    <table class="tv-table">
+
+      <thead>
+        <tr>
+          <th>Period of matches</th>
+          <th>MW</th>
+          <th>Date of estimated release</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>August/September</td>
+          <td>2–5</td>
+          <td>Week commencing 13 July</td>
+        </tr>
+
+        <tr>
+          <td>October</td>
+          <td>6–9</td>
+          <td>w/c 24 August</td>
+        </tr>
+
+        <tr>
+          <td>November</td>
+          <td>10–12</td>
+          <td>w/c 21 September</td>
+        </tr>
+
+        <tr>
+          <td>December/January</td>
+          <td>13–20</td>
+          <td>w/c 19 October</td>
+        </tr>
+
+        <tr>
+          <td>January</td>
+          <td>21–23</td>
+          <td>w/c 30 November</td>
+        </tr>
+
+        <tr>
+          <td>February</td>
+          <td>24–27</td>
+          <td>w/c 21 December</td>
+        </tr>
+
+        <tr>
+          <td>March</td>
+          <td>28–30</td>
+          <td>w/c 18 January</td>
+        </tr>
+
+        <tr>
+          <td>April</td>
+          <td>31–33</td>
+          <td>w/c 22 February</td>
+        </tr>
+
+        <tr>
+          <td>April/May</td>
+          <td>34</td>
+          <td>w/c 22 March</td>
+        </tr>
+
+        <tr>
+          <td>May</td>
+          <td>35</td>
+          <td>w/c 29 March</td>
+        </tr>
+
+        <tr>
+          <td>May</td>
+          <td>36</td>
+          <td>w/c 5 April</td>
+        </tr>
+
+        <tr>
+          <td>May</td>
+          <td>37</td>
+          <td>Post-FA Cup semi-finals*</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="tv-note">
+    *Approximate dates for when the announcements on matches
+    selected for live TV broadcast will be made.
+  </div>
+
+</details>
 
 
 <section id="fixtures">
@@ -969,7 +1095,8 @@ function showFixtures(){
       const statusIsTBC =
         String(f.Status || "")
           .trim()
-          .toLowerCase() === "tbc";
+          .toLowerCase() === "tbc" &&
+        String(f.ID || "").trim() !== "36";
 
 
       const kickoff =
