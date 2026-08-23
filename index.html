@@ -77,7 +77,6 @@ header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .homeaway-tbc{color:#9a7100;font-weight:800}
 .fixture-time{min-width:43px;text-align:right;font-size:16px;font-weight:900}
 .fixture-time.tbc{color:#9a7100;font-size:13px}
-.date-tbc-note{margin-top:7px;padding:6px 8px;border-radius:6px;background:#fff7df;color:#856404;font-size:9px;font-weight:700;line-height:1.25}
 .status{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:5px;font-size:9px;font-weight:800;background:#fff2cc;color:#856404}
 .status.confirmed{background:#e2f0d9;color:#287528}
 .tv{display:inline-block;margin-left:4px;color:#555}
@@ -1092,13 +1091,6 @@ function showFixtures(){
       const confirmed =
         isConfirmed(f);
 
-      const statusIsTBC =
-        String(f.Status || "")
-          .trim()
-          .toLowerCase() === "tbc" &&
-        String(f.ID || "").trim() !== "36";
-
-
       const kickoff =
         getKickoff(f);
 
@@ -1178,14 +1170,6 @@ function showFixtures(){
                   )
               }
             </div>
-
-            ${
-              statusIsTBC
-              ? `<div class="date-tbc-note">
-                   The date for this fixture is not set and could change
-                 </div>`
-              : ""
-            }
 
           </div>
 
