@@ -99,6 +99,13 @@ header h1{font-size:19px}
 .fixture-opponent{font-size:15px}
 }
 </style>
+<!-- Shared page-view tracking for the Manchester United Fixtures page -->
+<script
+  src="https://page-views-api.ratneshc.com/script"
+  data-site="mufcfixtures.github.io"
+  data-path="/manchester-united-fixtures/"
+  defer
+></script>
 </head>
 
 <body>
@@ -342,27 +349,27 @@ header h1{font-size:19px}
 const API_URL =
 "https://script.google.com/macros/s/AKfycbxak67aZihpH2B0a3Ls46HZubqv7P0h5VM7QF5fTmD9EGGEvqw3IES2B7PBt6-uuvEH/exec";
 
-/* Shared total page-view counter (counts page loads across visitors/devices) */
+/* Read the shared total page-view count */
 async function updatePageViewCounter(){
   const counter = document.getElementById("pageViewCount");
   if(!counter) return;
 
   try{
     const response = await fetch(
-      "https://api.counterapi.dev/v1/mufcfixtures/total-page-views/up",
+      "https://page-views-api.ratneshc.com/api/v1/views?site=mufcfixtures.github.io&path=%2Fmanchester-united-fixtures%2F",
       {cache:"no-store"}
     );
     if(!response.ok) throw new Error("Counter unavailable");
 
     const data = await response.json();
-    if(typeof data.count === "number"){
-      counter.textContent = data.count.toLocaleString("en-GB");
+    if(typeof data.views === "number"){
+      counter.textContent = data.views.toLocaleString("en-GB");
     }else{
       throw new Error("Unexpected counter response");
     }
   }catch(error){
     console.error("Page-view counter error:", error);
-    counter.textContent = "Unavailable";
+    counter.textContent = "Temporarily unavailable";
   }
 }
 
@@ -1320,7 +1327,8 @@ if(
 
 loadFixtures();
 startNextMatchWatcher();
-updatePageViewCounter();
+/* Allow the tracking script to register this visit before reading the total */
+setTimeout(updatePageViewCounter, 1200);
 
 /* Automatically check for fixture changes every 15 minutes */
 setInterval(() => {
